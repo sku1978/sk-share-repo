@@ -1,5 +1,5 @@
 import configparser as cpr
-from pyspark import SparkConfig
+from pyspark import SparkConf
 
 def get_spark_app_config():
   spark_conf = SparkConf()
