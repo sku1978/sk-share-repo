@@ -1,0 +1,835 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled5.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyO0tEKGF2JrFFQyROIVd7K7",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/sku1978/sk-share-repo/blob/main/ML/SVM/Cancer%20Data%20Set%20using%20SVM\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4_LU-hh4dN6-"
+      },
+      "source": [
+        "## **Import Libraries**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "dS5qT4zOc0Gm"
+      },
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "from sklearn.datasets import load_breast_cancer\n",
+        "from sklearn.model_selection import train_test_split, GridSearchCV\n",
+        "from sklearn.metrics import classification_report, confusion_matrix\n",
+        "from sklearn.svm import SVC\n",
+        "\n",
+        "%matplotlib inline"
+      ],
+      "execution_count": 68,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "3BOxZHn3hZFs"
+      },
+      "source": [
+        "## **Prepare data**"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "QDh25sLCheWD"
+      },
+      "source": [
+        "Data is already scaled, so no need to do it. Otherwise to use SVM, first scale the data."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ribr8f8WdJ1w"
+      },
+      "source": [
+        "cancer=load_breast_cancer()"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5GmZX5_6kuih",
+        "outputId": "df204e8b-e29e-4d0a-9be0-f5847d4c828b"
+      },
+      "source": [
+        "print(cancer.DESCR)"
+      ],
+      "execution_count": 36,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            ".. _breast_cancer_dataset:\n",
+            "\n",
+            "Breast cancer wisconsin (diagnostic) dataset\n",
+            "--------------------------------------------\n",
+            "\n",
+            "**Data Set Characteristics:**\n",
+            "\n",
+            "    :Number of Instances: 569\n",
+            "\n",
+            "    :Number of Attributes: 30 numeric, predictive attributes and the class\n",
+            "\n",
+            "    :Attribute Information:\n",
+            "        - radius (mean of distances from center to points on the perimeter)\n",
+            "        - texture (standard deviation of gray-scale values)\n",
+            "        - perimeter\n",
+            "        - area\n",
+            "        - smoothness (local variation in radius lengths)\n",
+            "        - compactness (perimeter^2 / area - 1.0)\n",
+            "        - concavity (severity of concave portions of the contour)\n",
+            "        - concave points (number of concave portions of the contour)\n",
+            "        - symmetry \n",
+            "        - fractal dimension (\"coastline approximation\" - 1)\n",
+            "\n",
+            "        The mean, standard error, and \"worst\" or largest (mean of the three\n",
+            "        largest values) of these features were computed for each image,\n",
+            "        resulting in 30 features.  For instance, field 3 is Mean Radius, field\n",
+            "        13 is Radius SE, field 23 is Worst Radius.\n",
+            "\n",
+            "        - class:\n",
+            "                - WDBC-Malignant\n",
+            "                - WDBC-Benign\n",
+            "\n",
+            "    :Summary Statistics:\n",
+            "\n",
+            "    ===================================== ====== ======\n",
+            "                                           Min    Max\n",
+            "    ===================================== ====== ======\n",
+            "    radius (mean):                        6.981  28.11\n",
+            "    texture (mean):                       9.71   39.28\n",
+            "    perimeter (mean):                     43.79  188.5\n",
+            "    area (mean):                          143.5  2501.0\n",
+            "    smoothness (mean):                    0.053  0.163\n",
+            "    compactness (mean):                   0.019  0.345\n",
+            "    concavity (mean):                     0.0    0.427\n",
+            "    concave points (mean):                0.0    0.201\n",
+            "    symmetry (mean):                      0.106  0.304\n",
+            "    fractal dimension (mean):             0.05   0.097\n",
+            "    radius (standard error):              0.112  2.873\n",
+            "    texture (standard error):             0.36   4.885\n",
+            "    perimeter (standard error):           0.757  21.98\n",
+            "    area (standard error):                6.802  542.2\n",
+            "    smoothness (standard error):          0.002  0.031\n",
+            "    compactness (standard error):         0.002  0.135\n",
+            "    concavity (standard error):           0.0    0.396\n",
+            "    concave points (standard error):      0.0    0.053\n",
+            "    symmetry (standard error):            0.008  0.079\n",
+            "    fractal dimension (standard error):   0.001  0.03\n",
+            "    radius (worst):                       7.93   36.04\n",
+            "    texture (worst):                      12.02  49.54\n",
+            "    perimeter (worst):                    50.41  251.2\n",
+            "    area (worst):                         185.2  4254.0\n",
+            "    smoothness (worst):                   0.071  0.223\n",
+            "    compactness (worst):                  0.027  1.058\n",
+            "    concavity (worst):                    0.0    1.252\n",
+            "    concave points (worst):               0.0    0.291\n",
+            "    symmetry (worst):                     0.156  0.664\n",
+            "    fractal dimension (worst):            0.055  0.208\n",
+            "    ===================================== ====== ======\n",
+            "\n",
+            "    :Missing Attribute Values: None\n",
+            "\n",
+            "    :Class Distribution: 212 - Malignant, 357 - Benign\n",
+            "\n",
+            "    :Creator:  Dr. William H. Wolberg, W. Nick Street, Olvi L. Mangasarian\n",
+            "\n",
+            "    :Donor: Nick Street\n",
+            "\n",
+            "    :Date: November, 1995\n",
+            "\n",
+            "This is a copy of UCI ML Breast Cancer Wisconsin (Diagnostic) datasets.\n",
+            "https://goo.gl/U2Uwz2\n",
+            "\n",
+            "Features are computed from a digitized image of a fine needle\n",
+            "aspirate (FNA) of a breast mass.  They describe\n",
+            "characteristics of the cell nuclei present in the image.\n",
+            "\n",
+            "Separating plane described above was obtained using\n",
+            "Multisurface Method-Tree (MSM-T) [K. P. Bennett, \"Decision Tree\n",
+            "Construction Via Linear Programming.\" Proceedings of the 4th\n",
+            "Midwest Artificial Intelligence and Cognitive Science Society,\n",
+            "pp. 97-101, 1992], a classification method which uses linear\n",
+            "programming to construct a decision tree.  Relevant features\n",
+            "were selected using an exhaustive search in the space of 1-4\n",
+            "features and 1-3 separating planes.\n",
+            "\n",
+            "The actual linear program used to obtain the separating plane\n",
+            "in the 3-dimensional space is that described in:\n",
+            "[K. P. Bennett and O. L. Mangasarian: \"Robust Linear\n",
+            "Programming Discrimination of Two Linearly Inseparable Sets\",\n",
+            "Optimization Methods and Software 1, 1992, 23-34].\n",
+            "\n",
+            "This database is also available through the UW CS ftp server:\n",
+            "\n",
+            "ftp ftp.cs.wisc.edu\n",
+            "cd math-prog/cpo-dataset/machine-learn/WDBC/\n",
+            "\n",
+            ".. topic:: References\n",
+            "\n",
+            "   - W.N. Street, W.H. Wolberg and O.L. Mangasarian. Nuclear feature extraction \n",
+            "     for breast tumor diagnosis. IS&T/SPIE 1993 International Symposium on \n",
+            "     Electronic Imaging: Science and Technology, volume 1905, pages 861-870,\n",
+            "     San Jose, CA, 1993.\n",
+            "   - O.L. Mangasarian, W.N. Street and W.H. Wolberg. Breast cancer diagnosis and \n",
+            "     prognosis via linear programming. Operations Research, 43(4), pages 570-577, \n",
+            "     July-August 1995.\n",
+            "   - W.H. Wolberg, W.N. Street, and O.L. Mangasarian. Machine learning techniques\n",
+            "     to diagnose breast cancer from fine-needle aspirates. Cancer Letters 77 (1994) \n",
+            "     163-171.\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "SYdZd7Kyd1T1"
+      },
+      "source": [
+        "X=pd.DataFrame(data=cancer.data, columns=cancer.feature_names)\n",
+        "y=pd.Series(data=cancer.target, name='target')"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "8pz6uG7HfaAh"
+      },
+      "source": [
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)"
+      ],
+      "execution_count": 60,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "SV4TrVO2rTtO"
+      },
+      "source": [
+        "## **Use SVC Model with default parameters**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "gF6xzxLGhxFm",
+        "outputId": "5b1cc9a4-bf3b-419b-8cf9-d4f3b3e675d5"
+      },
+      "source": [
+        "model=SVC()\n",
+        "model.fit(X_train, y_train)"
+      ],
+      "execution_count": 61,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "SVC(C=1.0, break_ties=False, cache_size=200, class_weight=None, coef0=0.0,\n",
+              "    decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',\n",
+              "    max_iter=-1, probability=False, random_state=None, shrinking=True,\n",
+              "    tol=0.001, verbose=False)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 61
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Z6I9JiSTjDE8"
+      },
+      "source": [
+        "predicted = model.predict(X_test)"
+      ],
+      "execution_count": 62,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "id": "rFkjWAhgjQCg",
+        "outputId": "a85c10fa-72f8-4152-d3ce-ae69c167bfce"
+      },
+      "source": [
+        "pd.DataFrame(classification_report(y_test, predicted, output_dict=True)).transpose()"
+      ],
+      "execution_count": 65,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>precision</th>\n",
+              "      <th>recall</th>\n",
+              "      <th>f1-score</th>\n",
+              "      <th>support</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>0.983333</td>\n",
+              "      <td>0.880597</td>\n",
+              "      <td>0.929134</td>\n",
+              "      <td>67.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>0.937500</td>\n",
+              "      <td>0.991736</td>\n",
+              "      <td>0.963855</td>\n",
+              "      <td>121.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>accuracy</th>\n",
+              "      <td>0.952128</td>\n",
+              "      <td>0.952128</td>\n",
+              "      <td>0.952128</td>\n",
+              "      <td>0.952128</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>macro avg</th>\n",
+              "      <td>0.960417</td>\n",
+              "      <td>0.936166</td>\n",
+              "      <td>0.946495</td>\n",
+              "      <td>188.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>weighted avg</th>\n",
+              "      <td>0.953834</td>\n",
+              "      <td>0.952128</td>\n",
+              "      <td>0.951481</td>\n",
+              "      <td>188.000000</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "              precision    recall  f1-score     support\n",
+              "0              0.983333  0.880597  0.929134   67.000000\n",
+              "1              0.937500  0.991736  0.963855  121.000000\n",
+              "accuracy       0.952128  0.952128  0.952128    0.952128\n",
+              "macro avg      0.960417  0.936166  0.946495  188.000000\n",
+              "weighted avg   0.953834  0.952128  0.951481  188.000000"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 65
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "k-kJbq3OoZOb"
+      },
+      "source": [
+        "The notes tells  us there are 212 malignant and 257 benign. Check whether 0 and 1 represents malignant or benign"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "JZsyLG1gmZQa",
+        "outputId": "f91a1dcf-1484-4185-ca43-2ed3cf382fca"
+      },
+      "source": [
+        "y.groupby(by=y).count()"
+      ],
+      "execution_count": 63,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "target\n",
+              "0    212\n",
+              "1    357\n",
+              "Name: target, dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 63
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 111
+        },
+        "id": "lUv6UGLwkdRs",
+        "outputId": "c3f358fc-3c92-4821-c4cc-47e961f027ef"
+      },
+      "source": [
+        "pd.DataFrame(confusion_matrix(y_test, predicted), columns=['Predicted Malignant', 'Predicted Benign'], index=['True Malignant', 'True Benign'])"
+      ],
+      "execution_count": 64,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Predicted Malignant</th>\n",
+              "      <th>Predicted Benign</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>True Malignant</th>\n",
+              "      <td>59</td>\n",
+              "      <td>8</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>True Benign</th>\n",
+              "      <td>1</td>\n",
+              "      <td>120</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "                Predicted Malignant  Predicted Benign\n",
+              "True Malignant                   59                 8\n",
+              "True Benign                       1               120"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 64
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "t4eFhjadrjk5"
+      },
+      "source": [
+        "Use GridSearch Meta estimator for C and gamma"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "es41hyEmri29"
+      },
+      "source": [
+        "param_grid = { 'C': [0.01, 0.1, 1, 10, 100, 1000], 'gamma': [1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001, 0.00001]}"
+      ],
+      "execution_count": 94,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "gDYpDOa7slD6"
+      },
+      "source": [
+        "grid=GridSearchCV(estimator=SVC(), param_grid=param_grid, verbose=1)"
+      ],
+      "execution_count": 95,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "iWZbKoRms-30",
+        "outputId": "7c716e1d-2cd2-495f-e1e2-ac41633bfe0e"
+      },
+      "source": [
+        "grid.fit(X_train, y_train)"
+      ],
+      "execution_count": 96,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Fitting 5 folds for each of 54 candidates, totalling 270 fits\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "stream",
+          "text": [
+            "[Parallel(n_jobs=1)]: Using backend SequentialBackend with 1 concurrent workers.\n",
+            "[Parallel(n_jobs=1)]: Done 270 out of 270 | elapsed:    3.1s finished\n"
+          ],
+          "name": "stderr"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "GridSearchCV(cv=None, error_score=nan,\n",
+              "             estimator=SVC(C=1.0, break_ties=False, cache_size=200,\n",
+              "                           class_weight=None, coef0=0.0,\n",
+              "                           decision_function_shape='ovr', degree=3,\n",
+              "                           gamma='scale', kernel='rbf', max_iter=-1,\n",
+              "                           probability=False, random_state=None, shrinking=True,\n",
+              "                           tol=0.001, verbose=False),\n",
+              "             iid='deprecated', n_jobs=None,\n",
+              "             param_grid={'C': [0.01, 0.1, 1, 10, 100, 1000],\n",
+              "                         'gamma': [1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001,\n",
+              "                                   1e-05]},\n",
+              "             pre_dispatch='2*n_jobs', refit=True, return_train_score=False,\n",
+              "             scoring=None, verbose=1)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 96
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "KfSyiVKltVlq",
+        "outputId": "dc353e2c-c193-4728-a334-dfa083448a66"
+      },
+      "source": [
+        "grid.best_estimator_"
+      ],
+      "execution_count": 97,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "SVC(C=1000, break_ties=False, cache_size=200, class_weight=None, coef0=0.0,\n",
+              "    decision_function_shape='ovr', degree=3, gamma=1e-05, kernel='rbf',\n",
+              "    max_iter=-1, probability=False, random_state=None, shrinking=True,\n",
+              "    tol=0.001, verbose=False)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 97
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "YIYVEGQ4tY_F",
+        "outputId": "6bd2f4a5-b2df-4381-a609-96c7ccb361c5"
+      },
+      "source": [
+        "grid.best_params_"
+      ],
+      "execution_count": 98,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "{'C': 1000, 'gamma': 1e-05}"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 98
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Reth3uyTtiNX"
+      },
+      "source": [
+        "predicted=grid.predict(X_test)"
+      ],
+      "execution_count": 100,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "id": "f4QwyvYYt4hx",
+        "outputId": "8e587b69-7a2a-4ba3-a444-10ec2e63f4ea"
+      },
+      "source": [
+        "pd.DataFrame(classification_report(y_test, predicted, output_dict=True)).transpose()"
+      ],
+      "execution_count": 101,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>precision</th>\n",
+              "      <th>recall</th>\n",
+              "      <th>f1-score</th>\n",
+              "      <th>support</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>0.955224</td>\n",
+              "      <td>0.955224</td>\n",
+              "      <td>0.955224</td>\n",
+              "      <td>67.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>0.975207</td>\n",
+              "      <td>0.975207</td>\n",
+              "      <td>0.975207</td>\n",
+              "      <td>121.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>accuracy</th>\n",
+              "      <td>0.968085</td>\n",
+              "      <td>0.968085</td>\n",
+              "      <td>0.968085</td>\n",
+              "      <td>0.968085</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>macro avg</th>\n",
+              "      <td>0.965215</td>\n",
+              "      <td>0.965215</td>\n",
+              "      <td>0.965215</td>\n",
+              "      <td>188.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>weighted avg</th>\n",
+              "      <td>0.968085</td>\n",
+              "      <td>0.968085</td>\n",
+              "      <td>0.968085</td>\n",
+              "      <td>188.000000</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "              precision    recall  f1-score     support\n",
+              "0              0.955224  0.955224  0.955224   67.000000\n",
+              "1              0.975207  0.975207  0.975207  121.000000\n",
+              "accuracy       0.968085  0.968085  0.968085    0.968085\n",
+              "macro avg      0.965215  0.965215  0.965215  188.000000\n",
+              "weighted avg   0.968085  0.968085  0.968085  188.000000"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 101
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 111
+        },
+        "id": "zWOIGWAhtxta",
+        "outputId": "df231fb9-96f9-441b-943e-3f4edf20baf4"
+      },
+      "source": [
+        "pd.DataFrame(confusion_matrix(y_test, predicted), columns=['Predicted Malignant', 'Predicted Benign'], index=['True Malignant', 'True Benign'])"
+      ],
+      "execution_count": 102,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Predicted Malignant</th>\n",
+              "      <th>Predicted Benign</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>True Malignant</th>\n",
+              "      <td>64</td>\n",
+              "      <td>3</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>True Benign</th>\n",
+              "      <td>3</td>\n",
+              "      <td>118</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "                Predicted Malignant  Predicted Benign\n",
+              "True Malignant                   64                 3\n",
+              "True Benign                       3               118"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 102
+        }
+      ]
+    }
+  ]
+}
